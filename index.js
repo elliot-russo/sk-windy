@@ -132,7 +132,7 @@ module.exports = function(app) {
       if ( (position == null) || (windSpeed.length == 0) || (windDirection == null) ||
            (temperature == null) ) {
 	    let message = `Not submitting position due to lack of position ${position.latitude}, wind ` +
-	              `speed ${windspeed}, wind direction ${windDirection} or temperature ${temperature}.`;
+	              `speed ${windSpeed}, wind direction ${windDirection} or temperature ${temperature}.`;
 	    app.debug(message);
         return
       }
