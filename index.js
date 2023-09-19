@@ -131,8 +131,8 @@ module.exports = function(app) {
     submitProcess = setInterval( function() {
       if ( (position == null) || (windSpeed.length == 0) || (windDirection == null) ||
            (temperature == null) ) {
-	    let message = 'Not submitting position due to lack of position, wind ' +
-	              'speed, wind direction or temperature.';
+	    let message = `Not submitting position due to lack of position ${position.latitude}, wind ` +
+	              `speed ${windspeed}, wind direction ${windDirection} or temperature ${temperature}.`;
 	    app.debug(message);
         return
       }
