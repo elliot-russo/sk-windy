@@ -17,6 +17,9 @@ const POLL_INTERVAL = 1      // Poll every N seconds
 const API_BASE = 'https://stations.windy.com./pws/update/';
 const request = require('request')
 
+const WIND_SPEED_PATH = "environment.wind.speedTrue";
+const WIND_DIR_PATH = "environment.wind.directionTrue";
+
 const median = arr => {
   const mid = Math.floor(arr.length / 2),
     nums = [...arr].sort((a, b) => a - b);
@@ -89,10 +92,10 @@ module.exports = function(app) {
         path: 'navigation.position',
         period: POLL_INTERVAL * 1000
       }, {
-        path: 'environment.wind.angleTrueGround',
+        path: WIND_DIR_PATH,
         period: POLL_INTERVAL * 1000
       }, {
-        path: 'environment.wind.speedOverGround',
+        path: WIND_SPEED_PATH,
         period: POLL_INTERVAL * 1000
       }, {
         path: 'environment.water.temperature',
@@ -123,7 +126,7 @@ module.exports = function(app) {
       }
       if ((windSpeed.length > 0) && (windGust != null)) {
       	let currentWindSpeed = windSpeed[windSpeed.length-1];
-      	statusMessage += `Wind speed is ${currentWindSpeed}kts and gust is ${windGust}kts.`;
+      	statusMessage += `Wind speed is ${currentWindSpeed}m/s and gust is ${windGust}m/s.`;
       } 
       app.setPluginStatus(statusMessage);
     }, 5 * 1000);
@@ -131,9 +134,9 @@ module.exports = function(app) {
     submitProcess = setInterval( function() {
       if ( (position == null) || (windSpeed.length == 0) || (windDirection == null) ||
            (temperature == null) ) {
-	    let message = `Not submitting position due to lack of position ${position.latitude}, wind ` +
+	      let message = `Not submitting position due to lack of position ${position.latitude}, wind ` +
 	              `speed ${windSpeed}, wind direction ${windDirection} or temperature ${temperature}.`;
-	    app.debug(message);
+	      app.debug(message);
         return
       }
       let data = {
@@ -150,12 +153,10 @@ module.exports = function(app) {
         ],
         observations: [
           { station: options.stationId,
-            temp: temperature,
             wind: median(windSpeed),
-	        gust: windGust,
+	          gust: windGust,
             winddir: windDirection,
-            pressure: pressure,
-            rh: humidity }
+          }
         ]
       }
     
@@ -169,7 +170,7 @@ module.exports = function(app) {
       request(httpOptions, function (error, response, body) {
         if (!error || response.statusCode == 200) {
           app.debug('Weather report successfully submitted');
-	      lastSuccessfulUpdate = Date.now();
+	        lastSuccessfulUpdate = Date.now();
           position = null;
           windSpeed = [];
           windGust = null;
@@ -212,15 +213,15 @@ module.exports = function(app) {
       case 'navigation.position':
         position = value;
         break;
-      case 'environment.wind.speedOverGround':
+      case WIND_SPEED_PATH:
         let speed = value.toFixed(2);
         speed = parseFloat(speed);
-	    if ((windGust == null) || (speed > windGust)) {
-	        windGust = speed;
-	    }
-	    windSpeed.push(speed);
+        if ((windGust == null) || (speed > windGust)) {
+            windGust = speed;
+        }
+        windSpeed.push(speed);
         break;
-      case 'environment.wind.angleTrueGround':
+      case WIND_SPEED_PATH:
         windDirection = radiantToDegrees(value);
         windDirection = Math.round(windDirection);
         break;
