@@ -37,7 +37,7 @@ module.exports = function(app) {
   var position;
   var windSpeed = [];
   var windGust;
-  var windDirection;
+  var windDirection = null;
   var waterTemperature = 20;
   var temperature = 25;
   var pressure = 1000;
@@ -126,16 +126,15 @@ module.exports = function(app) {
       }
       if ((windSpeed.length > 0) && (windGust != null)) {
       	let currentWindSpeed = windSpeed[windSpeed.length-1];
-      	statusMessage += `Wind speed is ${currentWindSpeed}m/s and gust is ${windGust}m/s.`;
+      	statusMessage += `Wind speed is ${currentWindSpeed}m/s and gust is ${windGust}m/s.  Directon is ${windDirection}`;
       } 
       app.setPluginStatus(statusMessage);
     }, 5 * 1000);
 
     submitProcess = setInterval( function() {
-      if ( (position == null) || (windSpeed.length == 0) || (windDirection == null) ||
-           (temperature == null) ) {
+      if ( (position == null) || (windSpeed.length == 0) || (windDirection == null) )  {
 	      let message = `Not submitting position due to lack of position ${position.latitude}, wind ` +
-	              `speed ${windSpeed}, wind direction ${windDirection} or temperature ${temperature}.`;
+	              `speed ${windSpeed}, wind direction ${windDirection} `;
 	      app.debug(message);
         return
       }
@@ -221,7 +220,7 @@ module.exports = function(app) {
         }
         windSpeed.push(speed);
         break;
-      case WIND_SPEED_PATH:
+      case WIND_DIR_PATH:
         windDirection = radiantToDegrees(value);
         windDirection = Math.round(windDirection);
         break;
