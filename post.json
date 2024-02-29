@@ -1,0 +1,6 @@
+{"stations":[{"station":0,"name":"Fortaleza",
+"shareOption":"Open","type":"Signal K Windy Plugin","provider":"","url":"","lat":-17.4226131439209,
+]"lon":177.6143035888672,"elevation":1}],
+"observations":[
+    {"station":0,"temp":25,"wind":4.25,"gust":4.92,"winddir":154,"pressure":1000,"rh":0.7}
+    ]]}
