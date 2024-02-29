@@ -40,7 +40,6 @@ module.exports = function(app) {
   let position;
   let windSpeed = [];
   let windGust;
-  let windDirectionDD;
   let windDirection;
 
   /*
