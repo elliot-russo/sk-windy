@@ -39,6 +39,7 @@ module.exports = function(app) {
   let position;
   let windSpeed = [];
   let windGust;
+  let windDirectionDD;
   let windDirection;
 
   /*
@@ -122,7 +123,16 @@ module.exports = function(app) {
       }, {
         path: Wind_Speed_Path,
         period: POLL_INTERVAL * 1000
-      }]
+      }, {
+        path: 'navigation.headingTrue',
+        period: POLL_INTERVAL * 1000
+      }, {
+        path: 'environment.wind.angleApparent',
+        period: POLL_INTERVAL * 1000
+      },
+    
+    
+    ]
     };
 
     app.subscriptionmanager.subscribe(subscription, unsubscribes, function() {
@@ -269,13 +279,26 @@ module.exports = function(app) {
 
         /* update max wind gust */
         if ((windGust == null) || (speed > windGust)) windGust = speed;
-	      
+
+        windDirection = calculateWindirection();
+        windDirection = radiantToDegrees(windDirection);
+        windDirection = Math.round(windDirection);
+      
         break;
 
       case Wind_Direction_Path:
-        windDirection = radiantToDegrees(value);
-        windDirection = Math.round(windDirection);
+        windDirectionDD = radiantToDegrees(value);
+        windDirectionDD = Math.round(windDirectionDD);
         break;
+
+      case 'navigation.headingTrue':
+
+        break;
+
+      case 'environment.wind.angleApparent':
+        break;
+
+
 
       /*
       case 'environment.water.temperature':
@@ -302,6 +325,37 @@ module.exports = function(app) {
       default:
         app.debug('Unknown path: ' + path);
     }
+  }
+
+
+  function calculateWindirection() {
+    
+    let windHeading;
+    let headingTrue = getKeyValue('navigation.headingTrue');
+    let awa =  getKeyValue('environment.wind.angleApparent');
+
+    if (headingTrue && awa) {
+
+      windHeading = headingTrue + awa;
+
+      if (windHeading > Math.PI * 2) 
+        windHeading -= Math.PI * 2
+      else if (windHeading < 0) 
+        windHeading += Math.PI * 2
+
+     }
+
+     return windHeading;
+  }
+
+  function getKeyValue(key) {
+    
+    let Key = app.getSelfPath(key);
+    if (!Key) {
+        return null;
+    }
+    
+    return Key.value;
   }
 
   function timeSince(date) {
