@@ -32,8 +32,9 @@ module.exports = function(app) {
 
   let API_URI;
   let GPS_Source;
-  let Wind_Speed_Path = "environment.wind.speedTrue"; //speedTrue
-  let Wind_Direction_Path = "environment.wind.directionTrue"; //directionTrue
+  let CALC_INTERNAL = 0;
+  let Wind_Speed_Path = "environment.wind.speedOverGround"; //speedTrue
+  let Wind_Direction_Path = "environment.wind.angleTrueGround"; //directionTrue
   
   let lastSuccessfulUpdate;
   let position;
@@ -93,7 +94,12 @@ module.exports = function(app) {
       WindDirectionPath: {
         type: 'string',
         title: 'Data key for wind Direction',
-        default: 'environment.wind.directionGround'
+        default: 'environment.wind.angleTrueGround'
+      },
+      Calc: {
+        type: 'number',
+        title: 'Calculate internally',
+        default: 0
       }
     }
   }
@@ -107,6 +113,7 @@ module.exports = function(app) {
     API_URI = API_BASE + options.apiKey;
 
     if (options.GpsSource) GPS_Source = options.GpsSource;
+    if (options.Calc) CALC_INTERNAL = options.Calc;
     if (options.WindSpeedPath) Wind_Speed_Path = options.WindSpeedPath;
     if (options.WindDirectionPath) Wind_Direction_Path = options.WindDirectionPath;
   
@@ -152,7 +159,7 @@ module.exports = function(app) {
       	statusMessage += `Wind speed is ${currentWindSpeed}m/s and max gust is ${windGust}m/s. Directon is ${windDirection} `;
       } 
       app.setPluginStatus(statusMessage);
-    }, 5 * 1000);
+    }, 10 * 1000);
 
 
     /* SUBMIT TO WINDY */
@@ -280,15 +287,22 @@ module.exports = function(app) {
         /* update max wind gust */
         if ((windGust == null) || (speed > windGust)) windGust = speed;
 
-        windDirection = calculateWindirection();
-        windDirection = radiantToDegrees(windDirection);
-        windDirection = Math.round(windDirection);
-      
+        if (CALC_INTERNAL == 1)
+        {
+          windDirection = calculateWindDirection();
+          windDirection = radiantToDegrees(windDirection);
+          windDirection = Math.round(windDirection);
+        }
+        
         break;
 
       case Wind_Direction_Path:
-        windDirectionDD = radiantToDegrees(value);
-        windDirectionDD = Math.round(windDirectionDD);
+        if (CALC_INTERNAL == 0)
+        {
+          windDirection = radiantToDegrees(value);
+          windDirection = Math.round(windDirection);
+        
+        }
         break;
 
       case 'navigation.headingTrue':
@@ -328,12 +342,14 @@ module.exports = function(app) {
   }
 
 
-  function calculateWindirection() {
+  function calculateWindDirection() {
     
     let windHeading;
     let headingTrue = getKeyValue('navigation.headingTrue');
     let awa =  getKeyValue('environment.wind.angleApparent');
 
+    app.debug(`calculateWindirection: HT ${headingTrue} AWA ${awa}`);
+  
     if (headingTrue && awa) {
 
       windHeading = headingTrue + awa;
