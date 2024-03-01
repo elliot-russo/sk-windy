@@ -33,8 +33,8 @@ module.exports = function(app) {
   let API_URI;
   let GPS_Source;
   let CALC_INTERNAL = 0;
-  let Wind_Speed_Path = "environment.wind.speedOverGround"; //speedTrue
-  let Wind_Direction_Path = "environment.wind.angleTrueGround"; //directionTrue
+  let Wind_Speed_Path = "environment.wind.speedTrue"; //speedTrue
+  let Wind_Direction_Path = "environment.wind.directionTrue"; //directionTrue
   
   let lastSuccessfulUpdate;
   let position;
@@ -88,12 +88,12 @@ module.exports = function(app) {
       WindSpeedPath: {
         type: 'string',
         title: 'Data key for wind Speed',
-        default: 'environment.wind.speedOverGround'
+        default: 'environment.wind.speedTrue'
       },
       WindDirectionPath: {
         type: 'string',
         title: 'Data key for wind Direction',
-        default: 'environment.wind.angleTrueGround'
+        default: 'environment.wind.directionTrue'
       },
       Calc: {
         type: 'number',
@@ -135,9 +135,7 @@ module.exports = function(app) {
       }, {
         path: 'environment.wind.angleApparent',
         period: POLL_INTERVAL * 1000
-      },
-    
-    
+      }
     ]
     };
 
@@ -347,7 +345,7 @@ module.exports = function(app) {
     let headingTrue = getKeyValue('navigation.headingTrue');
     let awa =  getKeyValue('environment.wind.angleApparent');
 
-    app.debug(`calculateWindirection: HT ${headingTrue} AWA ${awa}`);
+    app.debug(`calculateWindirection: INPUTS HT ${headingTrue} AWA ${awa}`);
   
     if (headingTrue && awa) {
 
@@ -359,6 +357,9 @@ module.exports = function(app) {
         windHeading += Math.PI * 2
 
      }
+
+     app.debug(`calculateWindirection: RETURN WD ${windHeading}`);
+  
 
      return windHeading;
   }
