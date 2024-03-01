@@ -189,7 +189,7 @@ module.exports = function(app) {
             station: options.stationId,
             name: name,
             shareOption: 'Open',
-            type: 'Signal K Windy Plugin',
+            type: 'Yacht - SignalK Plugin',
             provider: options.provider,
             url: options.url,
             lat: position.latitude,
